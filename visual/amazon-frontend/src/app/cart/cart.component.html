@@ -1,7 +1,7 @@
 <div class="cart-container" *ngIf="cartItems.length > 0; else emptyCart">
   <h2>Your Cart</h2>
   <div class="cart-item" *ngFor="let item of cartItems">
-    <img [src]="item.product.imageUrl" alt="{{ item.product.name }}">
+    <img [src]="item.product.imageUrl" alt="{{ item.product.name }}" />
     <div class="details">
       <h3>{{ item.product.name }}</h3>
       <p>Price: ${{ item.product.price }} × {{ item.quantity }}</p>

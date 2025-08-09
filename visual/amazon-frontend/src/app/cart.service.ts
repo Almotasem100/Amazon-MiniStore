@@ -1,58 +1,87 @@
-// src/app/cart.service.ts
 import { Injectable } from '@angular/core';
-import { Product } from './product.model';
+import { BehaviorSubject } from 'rxjs';
 
-@Injectable({
-  providedIn: 'root'
-})
+export interface Product {
+  id: number;
+  name: string;
+  description?: string;
+  imageUrl?: string;
+  price: number;
+  quantity?: number;
+  category?: string;
+}
+
+export interface CartItem {
+  product: Product;
+  quantity: number;
+}
+
+@Injectable({ providedIn: 'root' })
 export class CartService {
-  private cartItems: { product: Product, quantity: number }[] = [];
+  private storageKey = 'cart_items';
+  private items: CartItem[] = [];
+
+  // expose count for header badge
+  readonly count$ = new BehaviorSubject<number>(0);
 
   constructor() {
-    // Load from localStorage if available
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) {
-      this.cartItems = JSON.parse(savedCart);
-    }
+    this.items = this.load();
+    this.count$.next(this.computeCount());
   }
 
-  private saveCart() {
-    localStorage.setItem('cart', JSON.stringify(this.cartItems));
-  }
-
-  getCartItems() {
-    return this.cartItems;
-  }
-
-  addToCart(product: Product, quantity: number = 1) {
-    const existingItem = this.cartItems.find(item => item.product.id === product.id);
-    if (existingItem) {
-      existingItem.quantity += quantity;
+  addToCart(product: Product, qty = 1) {
+    const found = this.items.find((i) => i.product.id === product.id);
+    if (found) {
+      found.quantity += qty;
     } else {
-      this.cartItems.push({ product, quantity });
+      this.items.push({ product, quantity: qty });
     }
-    this.saveCart();
+    this.persist();
+  }
+
+  getCartItems(): CartItem[] {
+    // return a copy to avoid outside mutation
+    return this.items.map((i) => ({ product: i.product, quantity: i.quantity }));
   }
 
   removeFromCart(productId: number) {
-    this.cartItems = this.cartItems.filter(item => item.product.id !== productId);
-    this.saveCart();
+    this.items = this.items.filter((i) => i.product.id !== productId);
+    this.persist();
   }
 
   clearCart() {
-    this.cartItems = [];
-    this.saveCart();
+    this.items = [];
+    this.persist();
   }
 
-  getTotalPrice() {
-    const total = this.cartItems.reduce(
-      (sum, item) => sum + (item.product.price * item.quantity),
-      0
-    );
-    return total;
+  getTotalPrice(): number {
+    return this.items.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
   }
 
-  getTotalWithDelivery(deliveryCost: number = 20) {
-    return this.getTotalPrice() + deliveryCost;
+  getTotalWithDelivery(delivery: number): number {
+    return this.getTotalPrice() + delivery;
+  }
+
+  getCount(): number {
+    return this.computeCount();
+  }
+
+  // helpers
+  private computeCount() {
+    return this.items.reduce((sum, i) => sum + i.quantity, 0);
+  }
+
+  private persist() {
+    localStorage.setItem(this.storageKey, JSON.stringify(this.items));
+    this.count$.next(this.computeCount());
+  }
+
+  private load(): CartItem[] {
+    try {
+      const raw = localStorage.getItem(this.storageKey);
+      return raw ? (JSON.parse(raw) as CartItem[]) : [];
+    } catch {
+      return [];
+    }
   }
 }

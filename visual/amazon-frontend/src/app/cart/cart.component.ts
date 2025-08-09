@@ -1,35 +1,42 @@
-import { Component } from '@angular/core';
-import { CartService } from '../cart.service';
-import { Product } from '../product.model';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { CartItem, CartService } from '../cart.service';
+import { ToastService } from '../toast.service';
 
 @Component({
   selector: 'app-cart',
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './cart.component.html',
-  styleUrls: ['./cart.component.css']
+  styleUrls: ['./cart.component.css'],
 })
-export class CartComponent {
-  cartItems: { product: Product, quantity: number }[] = [];
-  deliveryCost: number = 20;
-  showModal: boolean = false;
+export class CartComponent implements OnInit {
+  cartItems: CartItem[] = [];
+  deliveryCost = 20;
+  showModal = false;
 
-  constructor(private cartService: CartService) {
+  constructor(private cartService: CartService, private toast: ToastService) {}
+
+  ngOnInit(): void {
     this.cartItems = this.cartService.getCartItems();
   }
 
-  getTotalPrice() {
+  getTotalPrice(): number {
     return this.cartService.getTotalPrice();
   }
 
-  getTotalWithDelivery() {
+  getTotalWithDelivery(): number {
     return this.cartService.getTotalWithDelivery(this.deliveryCost);
   }
 
   removeItem(id: number) {
     this.cartService.removeFromCart(id);
     this.cartItems = this.cartService.getCartItems();
+    this.toast.show('Removed from cart');
   }
 
   checkout() {
+    if (this.cartItems.length === 0) return;
     this.showModal = true;
   }
 
@@ -37,6 +44,6 @@ export class CartComponent {
     this.cartService.clearCart();
     this.cartItems = [];
     this.showModal = false;
-    alert('Your order is on the way!');
+    this.toast.show('Your order is on the way!');
   }
 }
