@@ -1,0 +1,37 @@
+<div class="cart-container" *ngIf="cartItems.length > 0; else emptyCart">
+  <h2>Your Cart</h2>
+  <div class="cart-item" *ngFor="let item of cartItems">
+    <img [src]="item.product.imageUrl" alt="{{ item.product.name }}">
+    <div class="details">
+      <h3>{{ item.product.name }}</h3>
+      <p>Price: ${{ item.product.price }} × {{ item.quantity }}</p>
+      <p class="subtotal">Subtotal: ${{ item.product.price * item.quantity }}</p>
+      <button (click)="removeItem(item.product.id)">Remove</button>
+    </div>
+  </div>
+
+  <div class="cart-summary">
+    <p>Items total: <strong>${{ getTotalPrice() }}</strong></p>
+    <p>Delivery: <strong>${{ deliveryCost }}</strong></p>
+    <p class="grand-total">Total: <strong>${{ getTotalWithDelivery() }}</strong></p>
+    <button class="checkout-btn" (click)="checkout()">Checkout</button>
+  </div>
+</div>
+
+<ng-template #emptyCart>
+  <div class="empty">
+    <p>Your cart is empty.</p>
+  </div>
+</ng-template>
+
+<!-- Modal -->
+<div class="modal-backdrop" *ngIf="showModal">
+  <div class="modal">
+    <h3>Confirm your order</h3>
+    <p>Total: ${{ getTotalWithDelivery() }}</p>
+    <div class="modal-actions">
+      <button (click)="confirmOrder()">Confirm</button>
+      <button class="cancel" (click)="showModal = false">Cancel</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,19 @@
+<div class="auth-container">
+  <h2>Sign Up</h2>
+  <form (submit)="signUp(); $event.preventDefault()">
+    <input placeholder="Username" [(ngModel)]="user.username" name="username" required>
+    <input placeholder="Email" [(ngModel)]="user.email" name="email" required>
+    <input placeholder="Password" type="password" [(ngModel)]="user.password" name="password" required>
+    <input placeholder="Gender" [(ngModel)]="user.gender" name="gender">
+    <input placeholder="Country" [(ngModel)]="user.country" name="country">
+    <input placeholder="Phone" [(ngModel)]="user.phone" name="phone">
+    <input placeholder="Address" [(ngModel)]="user.address" name="address">
+    <button type="submit">Sign Up</button>
+    <div *ngIf="error" class="error">{{ error }}</div>
+    <div *ngIf="success" class="success">{{ success }}</div>
+    <div class="switch-auth">
+      Already have an account?
+      <a routerLink="/signin">Sign In</a>
+    </div>
+  </form>
+</div>

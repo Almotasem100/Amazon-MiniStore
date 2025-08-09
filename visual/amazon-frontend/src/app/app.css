@@ -1,0 +1,120 @@
+.app-header {
+  width: 100%;
+  background: #0b1d2a; /* Dark navy */
+  box-shadow: 0 3px 16px #00000036;
+  position: relative;
+  z-index: 10;
+  border-bottom-left-radius: 35px 24px;
+  border-bottom-right-radius: 35px 24px;
+}
+
+.header-content {
+  min-height: 95px; /* Increased height */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  position: relative;
+  z-index: 2;
+}
+
+.logo {
+  font-weight: 900;
+  font-size: 2.8rem; /* Slightly bigger */
+  font-family: 'Montserrat', 'Inter', sans-serif;
+  letter-spacing: -1px;
+  background: linear-gradient(90deg, #ff9900 0%, #e44d26 100%);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-transform: lowercase;
+  display: flex;
+  align-items: center;
+}
+
+.logo small {
+  color: #ffeac1;
+  font-weight: 400;
+  font-size: 1.05rem;
+  margin-left: 0.5rem;
+  letter-spacing: normal;
+}
+
+/* Cart button — unchanged */
+.cart-link {
+  display: flex;
+  align-items: center;
+  background: #232f3e;
+  color: #ff9900;
+  padding: 10px 23px 10px 16px;
+  border-radius: 28px;
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 1.08rem;
+  box-shadow: 0 2px 12px #232f3e18;
+  transition: background 0.15s, transform 0.13s;
+  margin-right: 12px;
+}
+.cart-link:hover, .cart-link:focus {
+  background: #ff9900;
+  color: #fff;
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 3px 16px #ff990031;
+}
+
+
+.main-content {
+  min-height: calc(100vh - 140px);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2.8rem 1.3rem 1.6rem 1.3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center horizontally */
+  text-align: center; /* Center text content */
+}
+
+.products-section {
+  width: 100%;
+  max-width: 1000px; /* Limit width for better centering */
+  margin: 0 auto;
+}
+
+.products-punch {
+    color: #ff9900;
+}
+
+.app-footer {
+  background: #232f3e;
+  color: #fff;
+  text-align: center;
+  padding: 1.19rem 0 1.3rem 0;
+  font-size: 1.08rem;
+  font-family: 'Montserrat', 'Inter', sans-serif;
+  letter-spacing: 0.03em;
+  box-shadow: 0 -2px 10px #232f3e14;
+  border-top-left-radius: 22px 12px;
+  border-top-right-radius: 22px 12px;
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+}
+
+
+.toast{
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  background: #232f3e;
+  color: #fff;
+  padding: 12px 16px;
+  border-radius: 10px;
+  box-shadow: 0 8px 28px rgba(0,0,0,.25);
+  font-weight: 600;
+  z-index: 9999;
+  opacity: .98;
+  transform: translateY(0);
+  animation: toast-in .18s ease-out;
+}
+@keyframes toast-in{ from{ opacity: 0; transform: translateY(8px);} to{ opacity: .98; transform: translateY(0);}}
+
+
