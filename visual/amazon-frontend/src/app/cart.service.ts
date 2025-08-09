@@ -9,7 +9,7 @@ import { CartComponent } from './cart/cart.component';
 @Injectable({ providedIn: 'root' })
 export class CartService {
   private apiUrl = `${environment.apiUrl}/cart`;
-  private cartSubject = new BehaviorSubject<CartDto>({ items: [], total: 0 });
+  private cartSubject = new BehaviorSubject<CartDto>({ items: [], subtotal: 0, total: 0, delivery: 0 });
 
   constructor(private http: HttpClient) {}
 
@@ -25,7 +25,7 @@ export class CartService {
 
   /** Fetch latest cart from backend */
   fetchCart(): Observable<CartDto> {
-    return this.http.get<CartDto>(`${this.apiUrl}/items`, { headers: this.authHeaders() }).pipe(
+    return this.http.get<CartDto>(`${this.apiUrl}`, { headers: this.authHeaders() }).pipe(
       tap(cart => this.cartSubject.next(cart))
     );
   }
@@ -54,14 +54,14 @@ export class CartService {
   /** Clear the entire cart */
   clear(): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/clear`, { headers: this.authHeaders() }).pipe(
-      tap(() => this.cartSubject.next({ items: [], total: 0 }))
+      tap(() => this.cartSubject.next({ items: [], subtotal: 0, total: 0, delivery: 0 }))
     );
   }
 
   /** Checkout */
   checkout(): Observable<any> {
     return this.http.post(`${this.apiUrl}/checkout`, {}, { headers: this.authHeaders() }).pipe(
-      tap(() => this.cartSubject.next({ items: [], total: 0 }))
+      tap(() => this.cartSubject.next({ items: [], subtotal: 0, total: 0, delivery: 0 }))
     );
   }
 

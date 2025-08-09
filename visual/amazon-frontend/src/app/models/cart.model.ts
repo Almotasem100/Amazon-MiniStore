@@ -1,16 +1,14 @@
 export interface CartItemDto {
   id: number;
-  quantity: number;
   productId: number;
-  product: {
-    id: number;
-    name: string;
-    price: number;
-    imageUrl?: string;
-  };
+  productName: string;
+  price: number;
+  quantity: number;
 }
 
 export interface CartDto {
   items: CartItemDto[];
+  subtotal: number;
   total: number;
+  delivery: number;
 }

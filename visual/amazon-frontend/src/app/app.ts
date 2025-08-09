@@ -1,12 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { Observable, isObservable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { CartService } from './cart.service';
 import { ToastService } from './toast.service';
-import type { CartDto } from './models/cart.model'; // adjust if your model path differs
+import type { CartDto } from './models/cart.model';
 
 @Component({
   selector: 'app-root',
@@ -17,46 +17,63 @@ import type { CartDto } from './models/cart.model'; // adjust if your model path
 })
 export class App {
   private cart = inject(CartService);
+  private router = inject(Router);
   readonly toast = inject(ToastService);
 
   currentYear = new Date().getFullYear();
 
-  // Supports either:
-  //   - cart.cart$ as Observable<CartDto>
-  //   - cart.cart$() returning Observable<CartDto>
+  // Live cart badge count, derived from the CartService stream
   cartCount$: Observable<number>;
 
   constructor() {
+    // Accept either cart.cart$ (Observable<CartDto>) or cart.cart$() -> Observable<CartDto>
     const stream = ((): Observable<CartDto> => {
       const anyCart = this.cart as any;
       const candidate = anyCart.cart$;
+
       if (typeof candidate === 'function') {
         return candidate.call(this.cart);
       }
       if (isObservable(candidate)) {
         return candidate as Observable<CartDto>;
       }
-      // Fallback: try a refresh/fetch method and map its result
+
+      // Fallbacks for different service shapes
       if (typeof anyCart.fetchCart === 'function') {
         return anyCart.fetchCart();
       }
       if (typeof anyCart.refresh === 'function') {
         anyCart.refresh();
       }
-      // Last resort: create an empty observable shape
-      return new Observable<CartDto>((sub) => sub.next({ items: [], total: 0 }));
+
+      // Last-resort: empty shape so the template stays safe
+      return new Observable<CartDto>((sub) => sub.next({ items: [], subtotal: 0, total: 0, delivery: 0 }));
     })();
 
     this.cartCount$ = stream.pipe(
-      map((c) => c?.items?.reduce((sum, it) => sum + (it.quantity ?? 0), 0) ?? 0)
+      map((c) => c?.items?.reduce((sum: number, it: any) => sum + (it.quantity ?? 0), 0) ?? 0)
     );
 
-    // Ensure backend state is loaded so badge is correct on first paint.
+    // Ensure the backend state is loaded so the badge is correct on first paint.
     const anyCart = this.cart as any;
     if (typeof anyCart.fetchCart === 'function') {
       anyCart.fetchCart().subscribe({ error: () => {} });
     } else if (typeof anyCart.refresh === 'function') {
       anyCart.refresh();
+    }
+  }
+
+  /**
+   * JWT-aware navigation: go to /cart if a token exists,
+   * otherwise prompt to sign in.
+   */
+  goToCart(): void {
+    const token = localStorage.getItem('jwt_token');
+    if (token) {
+      this.router.navigate(['/cart']);
+    } else {
+      this.toast.show('Please sign in to view your cart.');
+      this.router.navigate(['/signin']);
     }
   }
 }
