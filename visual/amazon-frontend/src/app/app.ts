@@ -7,6 +7,7 @@ import { map } from 'rxjs/operators';
 import { CartService } from './cart.service';
 import { ToastService } from './toast.service';
 import type { CartDto } from './models/cart.model';
+import { AuthService } from './auth.service';
 
 @Component({
   selector: 'app-root',
@@ -19,6 +20,8 @@ export class App {
   private cart = inject(CartService);
   private router = inject(Router);
   readonly toast = inject(ToastService);
+  private auth = inject(AuthService);
+
 
   currentYear = new Date().getFullYear();
 
@@ -75,5 +78,18 @@ export class App {
       this.toast.show('Please sign in to view your cart.');
       this.router.navigate(['/signin']);
     }
+  }
+
+  logout(): void {
+    // Clear auth info
+    this.auth.logout();
+
+    // Clear cart state
+    if ((this.cart as any).cartSubject) {
+      (this.cart as any).cartSubject.next({ items: [], subtotal: 0, total: 0, delivery: 0 });
+    }
+
+    // Redirect
+    this.router.navigate(['/signin']);
   }
 }

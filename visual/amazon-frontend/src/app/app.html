@@ -16,6 +16,7 @@
         <span class="cart-text">Cart</span>
         <span class="cart-badge" *ngIf="(cartCount$ | async) as n" [hidden]="n === 0">{{ n }}</span>
       </button>
+      <button type="button" class="logout-link" (click)="logout()">Logout</button>
     </nav>
   </div>
   <div class="header-curve"></div>
