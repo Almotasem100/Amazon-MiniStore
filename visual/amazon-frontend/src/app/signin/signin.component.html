@@ -1,13 +1,13 @@
 <div class="auth-container">
   <h2>Sign In</h2>
-  <form (submit)="signIn(); $event.preventDefault()">
+  <form (ngSubmit)="signIn()">
     <input placeholder="Username or Email" [(ngModel)]="credentials.usernameOrEmail" name="username" required>
     <input placeholder="Password" type="password" [(ngModel)]="credentials.password" name="password" required>
     <button type="submit">Sign In</button>
     <div *ngIf="error" class="error">{{ error }}</div>
-    <div class="switch-auth">
-      Don't have an account?
-      <a routerLink="/signup">Sign Up</a>
-    </div>
   </form>
+  <div class="switch-auth">
+    Don't have an account?
+    <a routerLink="/signup">Sign Up</a>
+  </div>
 </div>

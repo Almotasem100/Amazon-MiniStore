@@ -1,51 +1,82 @@
 .auth-container {
-  max-width: 400px;
-  margin: 4rem auto;
+  max-width: 420px;
+  margin: 5rem auto;
   background: #fff;
-  padding: 2.5rem 2rem 1.5rem 2rem;
-  border-radius: 1rem;
-  box-shadow: 0 2px 20px #0002;
+  padding: 3rem 2.4rem 2.4rem 2.4rem; /* more breathing room */
+  border-radius: 1.2rem;
+  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
+
 .auth-container h2 {
-  margin-bottom: 1.3rem;
+  margin-bottom: 2rem; /* more space before inputs */
   color: #222b45;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 1.8rem;
+  text-align: center;
+  letter-spacing: -0.5px;
 }
+
+.auth-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem; /* more consistent spacing */
+  width: 400px;
+  align-self: center;
+}
+
 input {
   display: block;
   width: 100%;
-  margin-bottom: 1.1rem;
-  padding: 0.8rem 1rem;
-  border-radius: 6px;
-  border: 1px solid #ddd;
-  font-size: 1rem;
+  padding: 0.9rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1.05rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  align-self: center;
 }
+
+input:focus {
+  outline: none;
+  border-color: #ff9900;
+  box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.15);
+}
+
 button {
-  width: 100%;
+  width: 60%;
   background: #f90;
   border: none;
   color: #fff;
-  padding: 0.85rem 0;
-  font-size: 1.1rem;
-  border-radius: 6px;
-  font-weight: 600;
-  margin-bottom: 1rem;
+  padding: 1rem 0;
+  font-size: 1.15rem;
+  border-radius: 8px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+  align-self: center;
 }
+
 button:hover {
   background: #db7c0b;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(219, 124, 11, 0.3);
 }
+
 .error {
   color: #d32f2f;
-  margin-bottom: 1rem;
   font-size: 0.97rem;
+  text-align: center;
 }
+
 .switch-auth {
   text-align: center;
   font-size: 1rem;
-  margin-top: 1rem;
+  margin-top: 1.5rem;
 }
+
 .switch-auth a {
   color: #0a5aff;
   text-decoration: underline;
