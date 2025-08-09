@@ -1,49 +1,65 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CartItem, CartService } from '../cart.service';
+import { CartService } from '../cart.service';
 import { ToastService } from '../toast.service';
+import { CartDto } from '../models/cart.model';
 
 @Component({
   selector: 'app-cart',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './cart.component.html',
-  styleUrls: ['./cart.component.css'],
+  styleUrls: ['./cart.component.css']
 })
 export class CartComponent implements OnInit {
-  cartItems: CartItem[] = [];
   deliveryCost = 20;
   showModal = false;
 
-  constructor(private cartService: CartService, private toast: ToastService) {}
+  cartItems: CartDto['items'] = [];
+
+  constructor(private cart: CartService, private toast: ToastService) {}
 
   ngOnInit(): void {
-    this.cartItems = this.cartService.getCartItems();
+    this.load();
+  }
+
+  private load(): void {
+    this.cart.fetchCart().subscribe({
+      next: (c: CartDto) => (this.cartItems = c.items),
+      error: () => this.toast.show('Could not load cart')
+    });
   }
 
   getTotalPrice(): number {
-    return this.cartService.getTotalPrice();
+    return this.cart.getSnapshot().total ?? 0;
   }
 
   getTotalWithDelivery(): number {
-    return this.cartService.getTotalWithDelivery(this.deliveryCost);
+    return this.cart.getTotalWithDelivery(this.deliveryCost);
   }
 
-  removeItem(id: number) {
-    this.cartService.removeFromCart(id);
-    this.cartItems = this.cartService.getCartItems();
-    this.toast.show('Removed from cart');
+  removeItem(productId: number): void {
+    this.cart.removeItem(productId).subscribe({
+      next: (c: CartDto) => {
+        this.cartItems = c.items;
+        this.toast.show('Item removed');
+      },
+      error: () => this.toast.show('Could not remove item')
+    });
   }
 
-  checkout() {
-    if (this.cartItems.length === 0) return;
+  checkout(): void {
     this.showModal = true;
   }
 
-  confirmOrder() {
-    this.cartService.clearCart();
-    this.cartItems = [];
-    this.showModal = false;
-    this.toast.show('Your order is on the way!');
+  confirmOrder(): void {
+    this.cart.checkout().subscribe({
+      next: () => {
+        this.showModal = false;
+        this.cartItems = [];
+        this.toast.show('Your order is on the way! 🚚');
+      },
+      error: () => this.toast.show('Checkout failed')
+    });
   }
 }

@@ -1,9 +1,12 @@
-import { Component, OnDestroy, OnInit, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ToastService } from './toast.service';
+import { RouterOutlet } from '@angular/router';
+import { Observable, isObservable } from 'rxjs';
+import { map } from 'rxjs/operators';
+
 import { CartService } from './cart.service';
-import { Subscription } from 'rxjs';
+import { ToastService } from './toast.service';
+import type { CartDto } from './models/cart.model'; // adjust if your model path differs
 
 @Component({
   selector: 'app-root',
@@ -12,23 +15,48 @@ import { Subscription } from 'rxjs';
   templateUrl: './app.html',
   styleUrls: ['./app.css'],
 })
-export class App implements OnInit, OnDestroy {
+export class App {
+  private cart = inject(CartService);
+  readonly toast = inject(ToastService);
+
   currentYear = new Date().getFullYear();
 
-  // header cart badge
-  cartCount = signal<number>(0);
+  // Supports either:
+  //   - cart.cart$ as Observable<CartDto>
+  //   - cart.cart$() returning Observable<CartDto>
+  cartCount$: Observable<number>;
 
-  private sub?: Subscription;
+  constructor() {
+    const stream = ((): Observable<CartDto> => {
+      const anyCart = this.cart as any;
+      const candidate = anyCart.cart$;
+      if (typeof candidate === 'function') {
+        return candidate.call(this.cart);
+      }
+      if (isObservable(candidate)) {
+        return candidate as Observable<CartDto>;
+      }
+      // Fallback: try a refresh/fetch method and map its result
+      if (typeof anyCart.fetchCart === 'function') {
+        return anyCart.fetchCart();
+      }
+      if (typeof anyCart.refresh === 'function') {
+        anyCart.refresh();
+      }
+      // Last resort: create an empty observable shape
+      return new Observable<CartDto>((sub) => sub.next({ items: [], total: 0 }));
+    })();
 
-  constructor(public toast: ToastService, private cart: CartService) {}
+    this.cartCount$ = stream.pipe(
+      map((c) => c?.items?.reduce((sum, it) => sum + (it.quantity ?? 0), 0) ?? 0)
+    );
 
-  ngOnInit(): void {
-    // initialize and stay in sync with cart count
-    this.cartCount.set(this.cart.getCount());
-    this.sub = this.cart.count$.subscribe((n) => this.cartCount.set(n));
-  }
-
-  ngOnDestroy(): void {
-    this.sub?.unsubscribe();
+    // Ensure backend state is loaded so badge is correct on first paint.
+    const anyCart = this.cart as any;
+    if (typeof anyCart.fetchCart === 'function') {
+      anyCart.fetchCart().subscribe({ error: () => {} });
+    } else if (typeof anyCart.refresh === 'function') {
+      anyCart.refresh();
+    }
   }
 }

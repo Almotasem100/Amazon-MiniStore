@@ -4,18 +4,13 @@
     <nav>
       <a class="cart-link" routerLink="/cart" aria-label="Go to cart">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" class="cart-icon">
-          <circle cx="10" cy="21" r="1.5" fill="#ff9900" />
-          <circle cx="17" cy="21" r="1.5" fill="#ff9900" />
-          <path
-            d="M3 4h2l2.6 10.39a2 2 0 0 0 2 1.61h7.72a2 2 0 0 0 2-1.61L21 7H6"
-            stroke="#fff"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
+          <circle cx="10" cy="21" r="1.5" fill="#ff9900"/>
+          <circle cx="17" cy="21" r="1.5" fill="#ff9900"/>
+          <path d="M3 4h2l2.6 10.39a2 2 0 0 0 2 1.61h7.72a2 2 0 0 0 2-1.61L21 7H6"
+                stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         <span class="cart-text">Cart</span>
-        <span class="cart-badge" *ngIf="cartCount() > 0">{{ cartCount() }}</span>
+        <span class="cart-badge" *ngIf="(cartCount$ | async) as n" [hidden]="n === 0">{{ n }}</span>
       </a>
     </nav>
   </div>

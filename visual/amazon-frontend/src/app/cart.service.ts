@@ -1,87 +1,81 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
-
-export interface Product {
-  id: number;
-  name: string;
-  description?: string;
-  imageUrl?: string;
-  price: number;
-  quantity?: number;
-  category?: string;
-}
-
-export interface CartItem {
-  product: Product;
-  quantity: number;
-}
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
+import { environment } from '../environments/environment';
+import { CartDto} from './models/cart.model';
+import { CartComponent } from './cart/cart.component';
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
-  private storageKey = 'cart_items';
-  private items: CartItem[] = [];
+  private apiUrl = `${environment.apiUrl}/cart`;
+  private cartSubject = new BehaviorSubject<CartDto>({ items: [], total: 0 });
 
-  // expose count for header badge
-  readonly count$ = new BehaviorSubject<number>(0);
+  constructor(private http: HttpClient) {}
 
-  constructor() {
-    this.items = this.load();
-    this.count$.next(this.computeCount());
+  /** Get current cart snapshot synchronously */
+  getSnapshot(): CartDto {
+    return this.cartSubject.value;
   }
 
-  addToCart(product: Product, qty = 1) {
-    const found = this.items.find((i) => i.product.id === product.id);
-    if (found) {
-      found.quantity += qty;
-    } else {
-      this.items.push({ product, quantity: qty });
-    }
-    this.persist();
+  /** Observable for cart changes */
+  cart$(): Observable<CartDto> {
+    return this.cartSubject.asObservable();
   }
 
-  getCartItems(): CartItem[] {
-    // return a copy to avoid outside mutation
-    return this.items.map((i) => ({ product: i.product, quantity: i.quantity }));
+  /** Fetch latest cart from backend */
+  fetchCart(): Observable<CartDto> {
+    return this.http.get<CartDto>(`${this.apiUrl}/items`, { headers: this.authHeaders() }).pipe(
+      tap(cart => this.cartSubject.next(cart))
+    );
   }
 
-  removeFromCart(productId: number) {
-    this.items = this.items.filter((i) => i.product.id !== productId);
-    this.persist();
+  /** Add item to cart */
+  addItem(productId: number, quantity = 1): Observable<CartDto> {
+    return this.http.post<CartDto>(`${this.apiUrl}/items`, { productId, quantity }, { headers: this.authHeaders() }).pipe(
+      tap(cart => this.cartSubject.next(cart))
+    );
   }
 
-  clearCart() {
-    this.items = [];
-    this.persist();
+  /** Update quantity of a cart item */
+  updateQuantity(rowId: number, quantity: number): Observable<CartDto> {
+    return this.http.put<CartDto>(`${this.apiUrl}/items/${rowId}`, { quantity }, { headers: this.authHeaders() }).pipe(
+      tap(cart => this.cartSubject.next(cart))
+    );
   }
 
-  getTotalPrice(): number {
-    return this.items.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
+  /** Remove an item from cart */
+  removeItem(rowId: number): Observable<CartDto> {
+    return this.http.delete<CartDto>(`${this.apiUrl}/items/${rowId}`, { headers: this.authHeaders() }).pipe(
+      tap(cart => this.cartSubject.next(cart))
+    );
   }
 
+  /** Clear the entire cart */
+  clear(): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/clear`, { headers: this.authHeaders() }).pipe(
+      tap(() => this.cartSubject.next({ items: [], total: 0 }))
+    );
+  }
+
+  /** Checkout */
+  checkout(): Observable<any> {
+    return this.http.post(`${this.apiUrl}/checkout`, {}, { headers: this.authHeaders() }).pipe(
+      tap(() => this.cartSubject.next({ items: [], total: 0 }))
+    );
+  }
+
+  /** Get total price + delivery */
   getTotalWithDelivery(delivery: number): number {
-    return this.getTotalPrice() + delivery;
+    return (this.cartSubject.value.total ?? 0) + delivery;
   }
 
-  getCount(): number {
-    return this.computeCount();
-  }
-
-  // helpers
-  private computeCount() {
-    return this.items.reduce((sum, i) => sum + i.quantity, 0);
-  }
-
-  private persist() {
-    localStorage.setItem(this.storageKey, JSON.stringify(this.items));
-    this.count$.next(this.computeCount());
-  }
-
-  private load(): CartItem[] {
-    try {
-      const raw = localStorage.getItem(this.storageKey);
-      return raw ? (JSON.parse(raw) as CartItem[]) : [];
-    } catch {
-      return [];
-    }
+  /** Helper: build headers with JWT token */
+  private authHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({
+      'Authorization': token ? `Bearer ${token}` : '',
+      'Content-Type': 'application/json'
+    });
   }
 }
