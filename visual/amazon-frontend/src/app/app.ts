@@ -8,6 +8,7 @@ import { CartService } from './cart.service';
 import { ToastService } from './toast.service';
 import type { CartDto } from './models/cart.model';
 import { AuthService } from './auth.service';
+import { OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-root',
@@ -16,7 +17,7 @@ import { AuthService } from './auth.service';
   templateUrl: './app.html',
   styleUrls: ['./app.css'],
 })
-export class App {
+export class App implements OnInit  {
   private cart = inject(CartService);
   private router = inject(Router);
   readonly toast = inject(ToastService);
@@ -91,5 +92,12 @@ export class App {
 
     // Redirect
     this.router.navigate(['/signin']);
+  }
+
+  ngOnInit(): void {
+    window.addEventListener('scroll', () => {
+      console.log('scrolling', window.scrollY);
+      document.body.classList.toggle('scrolled', window.scrollY > 5);
+    });
   }
 }
