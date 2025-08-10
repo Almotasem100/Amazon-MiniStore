@@ -5,9 +5,14 @@ html, body {
   background: #fafbfc;
   color: #242424;
   min-height: 100vh;
-  padding-top: 95px; /* header offset */
-  overflow-x: hidden; /* kills horizontal scroll */
+  overflow-x: hidden;
   width: 100%;
+}
+
+/* Make body flex container for sticky footer */
+body {
+  display: flex;
+  flex-direction: column;
 }
 
 /* header */
@@ -21,7 +26,7 @@ html, body {
   border-bottom-left-radius: 35px 24px;
   border-bottom-right-radius: 35px 24px;
   transition: box-shadow 0.25s ease-in-out;
-  max-width: 100%;  /* ensures header doesn't overflow */
+  max-width: 100%;
   overflow: hidden;
 }
 body.scrolled .app-header {
@@ -108,21 +113,23 @@ nav {
   transform: translateY(-2px) scale(1.04);
 }
 
-/* main */
+/* main — allow it to push footer down */
 .main-content {
-  min-height: calc(100vh - 140px);
-  width: 100%;
+  flex: 1;
   padding: 2.8rem 1.3rem 1.6rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   box-sizing: border-box;
+  padding-top: 95px; /* header offset */
 }
+
 .products-section {
   width: 100%;
   box-sizing: border-box;
 }
+
 .products-title {
   font-size: 2.6rem;
   font-weight: 800;
@@ -147,7 +154,7 @@ nav {
   margin-bottom: 3rem;
 }
 
-/* footer */
+/* footer always at bottom */
 .app-footer {
   background: #232f3e;
   color: #fff;
@@ -156,8 +163,7 @@ nav {
   font-size: 1.08rem;
   border-top-left-radius: 22px 12px;
   border-top-right-radius: 22px 12px;
-  max-width: 100%;
-  overflow: hidden;
+  margin-top: 5.4rem;
 }
 
 /* toast */
