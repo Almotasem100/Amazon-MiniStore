@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CartService } from '../cart.service';
 import { ToastService } from '../toast.service';
-import { CartDto } from '../models/cart.model';
+import { CartDto, CartItemDto } from '../models/cart.model';
 
 @Component({
   selector: 'app-cart',
@@ -48,8 +48,28 @@ export class CartComponent implements OnInit {
     });
   }
 
+  increaseQuantity(item: CartItemDto): void {
+    this.cart.updateQuantity(item.id, item.quantity + 1).subscribe({
+      next: (c: CartDto) => (this.cartItems = c.items),
+      error: () => this.toast.show('Could not update quantity')
+    });
+  }
+
+  decreaseQuantity(item: CartItemDto): void {
+    if (item.quantity > 1) {
+      this.cart.updateQuantity(item.id, item.quantity - 1).subscribe({
+        next: (c: CartDto) => (this.cartItems = c.items),
+        error: () => this.toast.show('Could not update quantity')
+      });
+    }
+  }
+
   checkout(): void {
     this.showModal = true;
+  }
+
+  closeModal(): void {
+    this.showModal = false;
   }
 
   confirmOrder(): void {

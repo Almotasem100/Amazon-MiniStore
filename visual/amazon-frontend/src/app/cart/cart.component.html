@@ -1,38 +1,45 @@
-<h2>Your Cart</h2>
+<!-- Cart Items -->
+<div *ngIf="cartItems.length > 0; else emptyCart" class="cart-container">
+  <div *ngFor="let item of cartItems" class="cart-item">
 
-<div *ngIf="cartItems.length > 0; else emptyCart">
-  <table>
-    <thead>
-      <tr>
-        <th>Product</th>
-        <th>Price</th>
-        <th>Quantity</th>
-        <th>Subtotal</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let item of cartItems">
-        <td>{{ item.productName }}</td>
-        <td>{{ item.price | currency }}</td>
-        <td>{{ item.quantity }}</td>
-        <td>{{ item.price * item.quantity | currency }}</td>
-        <td>
-          <button (click)="removeItem(item.id)">Remove</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+    <!-- Product Image (commented for now until backend supports it) -->
+    <!-- <img [src]="item.productImage" alt="{{ item.productName }}" /> -->
 
-  <div>
-    <p>Subtotal: {{ getTotalPrice() | currency }}</p>
-    <p>Delivery: {{ deliveryCost | currency }}</p>
-    <p><strong>Total: {{ getTotalWithDelivery() | currency }}</strong></p>
+    <div class="details">
+      <h3>{{ item.productName }}</h3>
+      <p class="price">{{ item.price | currency }}</p>
+      <p class="subtotal">Subtotal: {{ item.price * item.quantity | currency }}</p>
+    </div>
+
+    <!-- Actions on the right -->
+    <div class="actions">
+      <div class="qty-controls">
+        <button class="qty-btn" (click)="decreaseQuantity(item)">−</button>
+        <span>{{ item.quantity }}</span>
+        <button class="qty-btn" (click)="increaseQuantity(item)">+</button>
+      </div>
+      <button class="remove-btn" (click)="removeItem(item.id)">Remove</button>
+    </div>
   </div>
 
-  <button (click)="checkout()">Checkout</button>
+  <!-- Cart Summary -->
+  <div class="cart-summary">
+    <p>Subtotal: {{ getTotalPrice() | currency }}</p>
+    <p>Delivery: {{ deliveryCost | currency }}</p>
+    <p class="grand-total">Total: {{ getTotalWithDelivery() | currency }}</p>
+    <button class="checkout-btn" (click)="checkout()">Checkout</button>
+  </div>
 </div>
 
+<!-- Empty Cart -->
 <ng-template #emptyCart>
-  <p>Your cart is empty.</p>
+  <div class="empty">Your cart is empty.</div>
 </ng-template>
+
+<!-- Modal -->
+<div class="modal-backdrop" *ngIf="showModal">
+  <div class="modal">
+    <h2>Your order is on the way! 🚚</h2>
+    <button (click)="closeModal()" class="ok-btn">OK</button>
+  </div>
+</div>
