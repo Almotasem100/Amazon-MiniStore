@@ -2,16 +2,17 @@
 <div *ngIf="cartItems.length > 0; else emptyCart" class="cart-container">
   <div *ngFor="let item of cartItems" class="cart-item">
 
-    <!-- Product Image (commented for now until backend supports it) -->
-    <!-- <img [src]="item.productImage" alt="{{ item.productName }}" /> -->
+    <!-- Product Image -->
+    <img [src]="item.imageUrl" alt="{{ item.productName }}" class="product-img" />
 
+    <!-- Details -->
     <div class="details">
       <h3>{{ item.productName }}</h3>
       <p class="price">{{ item.price | currency }}</p>
       <p class="subtotal">Subtotal: {{ item.price * item.quantity | currency }}</p>
     </div>
 
-    <!-- Actions on the right -->
+    <!-- Actions -->
     <div class="actions">
       <div class="qty-controls">
         <button class="qty-btn" (click)="decreaseQuantity(item)">−</button>

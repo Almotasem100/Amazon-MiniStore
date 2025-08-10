@@ -12,9 +12,11 @@ import java.util.List;
 public class CartController {
 
     private final CartService cartService;
+    private final ProductRepository productRepository;
 
-    public CartController(CartService cartService) {
+    public CartController(CartService cartService, ProductRepository productRepository) {
         this.cartService = cartService;
+        this.productRepository = productRepository;
     }
 
     private String username(Authentication auth) {
@@ -22,8 +24,33 @@ public class CartController {
     }
 
     // Response DTO (items + totals)
-    public record CartRow(Long id, Long productId, String productName, double price, int quantity) {}
+    public record CartRow(
+            Long id,
+            Long productId,
+            String productName,
+            double price,
+            int quantity,
+            String imageUrl
+    ) {}
     public record CartResponse(List<CartRow> items, double subtotal, double total, double delivery) {}
+
+    private List<CartRow> mapRows(List<Cart> rows) {
+        return rows.stream()
+                .map(r -> {
+                    String imageUrl = productRepository.findById(r.getProductId())
+                            .map(Product::getImageUrl)
+                            .orElse(null);
+                    return new CartRow(
+                            r.getId(),
+                            r.getProductId(),
+                            r.getProductName(),
+                            r.getPrice(),
+                            r.getQuantity(),
+                            imageUrl
+                    );
+                })
+                .toList();
+    }
 
     @GetMapping
     public ResponseEntity<CartResponse> getCart(Authentication auth,
@@ -32,15 +59,9 @@ public class CartController {
         List<Cart> rows = cartService.getCart(user);
         double subtotal = rows.stream().mapToDouble(r -> r.getPrice() * r.getQuantity()).sum();
         double total = subtotal + delivery;
-
-        List<CartRow> items = rows.stream()
-                .map(r -> new CartRow(r.getId(), r.getProductId(), r.getProductName(), r.getPrice(), r.getQuantity()))
-                .toList();
-
-        return ResponseEntity.ok(new CartResponse(items, subtotal, total, delivery));
+        return ResponseEntity.ok(new CartResponse(mapRows(rows), subtotal, total, delivery));
     }
 
-    // Add item
     public static class AddItemRequest { public Long productId; public Integer quantity; }
 
     @PostMapping("/items")
@@ -50,13 +71,9 @@ public class CartController {
         List<Cart> rows = cartService.addItem(username(auth), req.productId, qty);
         double subtotal = rows.stream().mapToDouble(r -> r.getPrice() * r.getQuantity()).sum();
         double total = subtotal + delivery;
-        List<CartRow> items = rows.stream()
-                .map(r -> new CartRow(r.getId(), r.getProductId(), r.getProductName(), r.getPrice(), r.getQuantity()))
-                .toList();
-        return ResponseEntity.ok(new CartResponse(items, subtotal, total, delivery));
+        return ResponseEntity.ok(new CartResponse(mapRows(rows), subtotal, total, delivery));
     }
 
-    // Update quantity
     public static class UpdateQtyRequest { public Integer quantity; }
 
     @PatchMapping("/items/{rowId}")
@@ -67,26 +84,18 @@ public class CartController {
         List<Cart> rows = cartService.updateQuantity(username(auth), rowId, qty);
         double subtotal = rows.stream().mapToDouble(r -> r.getPrice() * r.getQuantity()).sum();
         double total = subtotal + delivery;
-        List<CartRow> items = rows.stream()
-                .map(r -> new CartRow(r.getId(), r.getProductId(), r.getProductName(), r.getPrice(), r.getQuantity()))
-                .toList();
-        return ResponseEntity.ok(new CartResponse(items, subtotal, total, delivery));
+        return ResponseEntity.ok(new CartResponse(mapRows(rows), subtotal, total, delivery));
     }
 
-    // Remove one row
     @DeleteMapping("/items/{rowId}")
     public ResponseEntity<CartResponse> removeItem(@PathVariable Long rowId, Authentication auth,
                                                    @RequestParam(name = "delivery", defaultValue = "20") double delivery) {
         List<Cart> rows = cartService.removeItem(username(auth), rowId);
         double subtotal = rows.stream().mapToDouble(r -> r.getPrice() * r.getQuantity()).sum();
         double total = subtotal + delivery;
-        List<CartRow> items = rows.stream()
-                .map(r -> new CartRow(r.getId(), r.getProductId(), r.getProductName(), r.getPrice(), r.getQuantity()))
-                .toList();
-        return ResponseEntity.ok(new CartResponse(items, subtotal, total, delivery));
+        return ResponseEntity.ok(new CartResponse(mapRows(rows), subtotal, total, delivery));
     }
 
-    // Clear all
     @DeleteMapping
     public ResponseEntity<Void> clear(Authentication auth) {
         cartService.clear(username(auth));

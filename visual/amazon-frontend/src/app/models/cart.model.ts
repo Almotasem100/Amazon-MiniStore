@@ -4,6 +4,7 @@ export interface CartItemDto {
   productName: string;
   price: number;
   quantity: number;
+  imageUrl?: string; // NEW
 }
 
 export interface CartDto {
