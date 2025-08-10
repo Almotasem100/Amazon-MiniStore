@@ -3,8 +3,8 @@
     <span class="logo"><span>amazon</span> <small>mini-store</small></span>
 
     <nav>
-      <!-- Button so we can run a JWT check before routing -->
-      <button type="button" class="cart-link" (click)="goToCart()" aria-label="Go to cart">
+      <!-- Dynamic button -->
+      <button *ngIf="!isCartPage" type="button" class="cart-link" (click)="goToCart()" aria-label="Go to cart">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" class="cart-icon">
           <circle cx="10" cy="21" r="1.5" fill="#ffffff"></circle>
           <circle cx="17" cy="21" r="1.5" fill="#ffffff"></circle>
@@ -16,6 +16,12 @@
         <span class="cart-text">Cart</span>
         <span class="cart-badge" *ngIf="(cartCount$ | async) as n" [hidden]="n === 0">{{ n }}</span>
       </button>
+
+      <!-- Show "Home" when on cart page -->
+      <button *ngIf="isCartPage" type="button" class="cart-link" (click)="goHome()" aria-label="Go to products">
+        🏠 Home
+      </button>
+
       <button type="button" class="logout-link" (click)="logout()">Logout</button>
     </nav>
   </div>
@@ -24,8 +30,8 @@
 
 <main class="main-content">
   <section class="products-section">
-    <h2 class="products-title">Our Products</h2>
-    <p class="products-punch">Welcome to our mini-store! Shop the best tech and more.</p>
+    <h2 class="products-title">{{ pageTitle }}</h2>
+    <p class="products-punch">{{ pageSubtitle }}</p>
     <router-outlet></router-outlet>
   </section>
 
