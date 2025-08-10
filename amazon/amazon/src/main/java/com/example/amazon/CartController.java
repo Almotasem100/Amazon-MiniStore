@@ -96,6 +96,13 @@ public class CartController {
         return ResponseEntity.ok(new CartResponse(mapRows(rows), subtotal, total, delivery));
     }
 
+    @PostMapping("/checkout")
+    public ResponseEntity<Void> checkout(Authentication auth) {
+        cartService.clear(username(auth)); // Clear cart in DB
+        return ResponseEntity.noContent().build();
+    }
+
+
     @DeleteMapping
     public ResponseEntity<Void> clear(Authentication auth) {
         cartService.clear(username(auth));

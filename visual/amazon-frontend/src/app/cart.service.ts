@@ -3,13 +3,17 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { environment } from '../environments/environment';
-import { CartDto} from './models/cart.model';
-import { CartComponent } from './cart/cart.component';
+import { CartDto } from './models/cart.model';
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
   private apiUrl = `${environment.apiUrl}/cart`;
-  private cartSubject = new BehaviorSubject<CartDto>({ items: [], subtotal: 0, total: 0, delivery: 0 });
+  private cartSubject = new BehaviorSubject<CartDto>({
+    items: [],
+    subtotal: 0,
+    total: 0,
+    delivery: 0
+  });
 
   constructor(private http: HttpClient) {}
 
@@ -25,44 +29,72 @@ export class CartService {
 
   /** Fetch latest cart from backend */
   fetchCart(): Observable<CartDto> {
-    return this.http.get<CartDto>(`${this.apiUrl}`, { headers: this.authHeaders() }).pipe(
-      tap(cart => this.cartSubject.next(cart))
-    );
+    return this.http
+      .get<CartDto>(`${this.apiUrl}`, { headers: this.authHeaders() })
+      .pipe(tap(cart => this.cartSubject.next(cart)));
   }
 
   /** Add item to cart */
   addItem(productId: number, quantity = 1): Observable<CartDto> {
-    return this.http.post<CartDto>(`${this.apiUrl}/items`, { productId, quantity }, { headers: this.authHeaders() }).pipe(
-      tap(cart => this.cartSubject.next(cart))
-    );
+    return this.http
+      .post<CartDto>(
+        `${this.apiUrl}/items`,
+        { productId, quantity },
+        { headers: this.authHeaders() }
+      )
+      .pipe(tap(cart => this.cartSubject.next(cart)));
   }
 
-  /** Update quantity of a cart item */
+  /** Update quantity of a cart item (PATCH request) */
   updateQuantity(rowId: number, quantity: number): Observable<CartDto> {
-    return this.http.put<CartDto>(`${this.apiUrl}/items/${rowId}`, { quantity }, { headers: this.authHeaders() }).pipe(
-      tap(cart => this.cartSubject.next(cart))
-    );
+    return this.http
+      .patch<CartDto>(
+        `${this.apiUrl}/items/${rowId}`,
+        { quantity },
+        { headers: this.authHeaders() }
+      )
+      .pipe(tap(cart => this.cartSubject.next(cart)));
   }
 
   /** Remove an item from cart */
   removeItem(rowId: number): Observable<CartDto> {
-    return this.http.delete<CartDto>(`${this.apiUrl}/items/${rowId}`, { headers: this.authHeaders() }).pipe(
-      tap(cart => this.cartSubject.next(cart))
-    );
+    return this.http
+      .delete<CartDto>(`${this.apiUrl}/items/${rowId}`, {
+        headers: this.authHeaders()
+      })
+      .pipe(tap(cart => this.cartSubject.next(cart)));
   }
 
   /** Clear the entire cart */
   clear(): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/clear`, { headers: this.authHeaders() }).pipe(
-      tap(() => this.cartSubject.next({ items: [], subtotal: 0, total: 0, delivery: 0 }))
-    );
+    return this.http
+      .delete<void>(`${this.apiUrl}`, { headers: this.authHeaders() })
+      .pipe(
+        tap(() =>
+          this.cartSubject.next({
+            items: [],
+            subtotal: 0,
+            total: 0,
+            delivery: 0
+          })
+        )
+      );
   }
 
   /** Checkout */
   checkout(): Observable<any> {
-    return this.http.post(`${this.apiUrl}/checkout`, {}, { headers: this.authHeaders() }).pipe(
-      tap(() => this.cartSubject.next({ items: [], subtotal: 0, total: 0, delivery: 0 }))
-    );
+    return this.http
+      .post(`${this.apiUrl}/checkout`, {}, { headers: this.authHeaders() })
+      .pipe(
+        tap(() =>
+          this.cartSubject.next({
+            items: [],
+            subtotal: 0,
+            total: 0,
+            delivery: 0
+          })
+        )
+      );
   }
 
   /** Get total price + delivery */
@@ -74,7 +106,7 @@ export class CartService {
   private authHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');
     return new HttpHeaders({
-      'Authorization': token ? `Bearer ${token}` : '',
+      Authorization: token ? `Bearer ${token}` : '',
       'Content-Type': 'application/json'
     });
   }

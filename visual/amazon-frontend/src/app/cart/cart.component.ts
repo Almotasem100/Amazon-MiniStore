@@ -25,21 +25,23 @@ export class CartComponent implements OnInit {
 
   private load(): void {
     this.cart.fetchCart().subscribe({
-      next: (c: CartDto) => (this.cartItems = c.items),
+      next: (c: CartDto) => {
+        this.cartItems = c.items;
+      },
       error: () => this.toast.show('Could not load cart')
     });
   }
 
   getTotalPrice(): number {
-    return this.cart.getSnapshot().total ?? 0;
+    return this.cart.getSnapshot().subtotal ?? 0;
   }
 
   getTotalWithDelivery(): number {
-    return this.cart.getTotalWithDelivery(this.deliveryCost);
+    return this.cart.getSnapshot().total ?? 0;
   }
 
-  removeItem(productId: number): void {
-    this.cart.removeItem(productId).subscribe({
+  removeItem(rowId: number): void {
+    this.cart.removeItem(rowId).subscribe({
       next: (c: CartDto) => {
         this.cartItems = c.items;
         this.toast.show('Item removed');
@@ -49,25 +51,39 @@ export class CartComponent implements OnInit {
   }
 
   increaseQuantity(item: CartItemDto): void {
-    this.cart.updateQuantity(item.id, item.quantity + 1).subscribe({
-      next: (c: CartDto) => (this.cartItems = c.items),
-      error: () => this.toast.show('Could not update quantity')
-    });
+    const newQty = item.quantity + 1;
+    this.updateQuantity(item, newQty);
   }
 
   decreaseQuantity(item: CartItemDto): void {
     if (item.quantity > 1) {
-      this.cart.updateQuantity(item.id, item.quantity - 1).subscribe({
-        next: (c: CartDto) => (this.cartItems = c.items),
-        error: () => this.toast.show('Could not update quantity')
-      });
+      const newQty = item.quantity - 1;
+      this.updateQuantity(item, newQty);
     }
   }
 
-  checkout(): void {
-    this.showModal = true;
+  private updateQuantity(item: CartItemDto, quantity: number): void {
+    // Instant UI feedback
+    item.quantity = quantity;
+
+    this.cart.updateQuantity(item.id, quantity).subscribe({
+      next: (c: CartDto) => {
+        this.cartItems = c.items;
+      },
+      error: () => this.toast.show('Could not update quantity')
+    });
   }
 
+  checkout(): void {
+    this.cart.checkout().subscribe({
+      next: () => {
+        this.cartItems = [];
+        this.showModal = true;
+      },
+      error: () => this.toast.show('Checkout failed')
+    });
+  }
+  
   closeModal(): void {
     this.showModal = false;
   }
