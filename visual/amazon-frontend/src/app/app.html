@@ -2,8 +2,9 @@
   <div class="header-content">
     <span class="logo"><span>amazon</span> <small>mini-store</small></span>
 
-    <nav>
-      <!-- Dynamic button -->
+    <!-- Only show navigation when not on auth pages -->
+    <nav *ngIf="!isAuthPage">
+      <!-- Cart button -->
       <button *ngIf="!isCartPage" type="button" class="cart-link" (click)="goToCart()" aria-label="Go to cart">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" class="cart-icon">
           <circle cx="10" cy="21" r="1.5" fill="#ffffff"></circle>
@@ -17,11 +18,12 @@
         <span class="cart-badge" *ngIf="(cartCount$ | async) as n" [hidden]="n === 0">{{ n }}</span>
       </button>
 
-      <!-- Show "Home" when on cart page -->
+      <!-- Home button when on cart -->
       <button *ngIf="isCartPage" type="button" class="cart-link" (click)="goHome()" aria-label="Go to products">
         🏠 Home
       </button>
 
+      <!-- Logout -->
       <button type="button" class="logout-link" (click)="logout()">Logout</button>
     </nav>
   </div>
@@ -35,7 +37,6 @@
     <router-outlet></router-outlet>
   </section>
 
-  <!-- Toast -->
   <div class="toast" *ngIf="toast.message() as msg">{{ msg }}</div>
 </main>
 

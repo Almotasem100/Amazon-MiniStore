@@ -26,9 +26,9 @@ export class App implements OnInit {
   pageTitle = 'Our Products';
   pageSubtitle = 'Welcome to our mini-store! Shop the best tech and more.';
   isCartPage = false;
+  isAuthPage = false; // new flag
 
   constructor() {
-    // Resolve cart stream
     const stream = ((): Observable<CartDto> => {
       const anyCart = this.cart as any;
       const candidate = anyCart.cart$;
@@ -57,7 +57,6 @@ export class App implements OnInit {
       )
     );
 
-    // Preload backend state for cart badge
     const anyCart = this.cart as any;
     if (typeof anyCart.fetchCart === 'function') {
       anyCart.fetchCart().subscribe({ error: () => {} });
@@ -67,22 +66,28 @@ export class App implements OnInit {
   }
 
   ngOnInit(): void {
-    // Header shadow toggle
     window.addEventListener('scroll', () => {
       document.body.classList.toggle('scrolled', window.scrollY > 5);
     });
 
-    // Detect route changes for dynamic titles
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event) => {
         const url = (event as NavigationEnd).urlAfterRedirects;
+
         if (url.startsWith('/cart')) {
           this.isCartPage = true;
+          this.isAuthPage = false;
           this.pageTitle = 'Your Cart';
           this.pageSubtitle = 'Review your items before checkout.';
+        } else if (url.startsWith('/signin') || url.startsWith('/signup')) {
+          this.isCartPage = false;
+          this.isAuthPage = true;
+          this.pageTitle = 'Welcome to Amazon Mini-Store';
+          this.pageSubtitle = 'Your one-stop shop for the latest tech & gadgets.';
         } else {
           this.isCartPage = false;
+          this.isAuthPage = false;
           this.pageTitle = 'Our Products';
           this.pageSubtitle = 'Welcome to our mini-store! Shop the best tech and more.';
         }
@@ -105,7 +110,6 @@ export class App implements OnInit {
 
   logout(): void {
     this.auth.logout();
-
     if ((this.cart as any).cartSubject) {
       (this.cart as any).cartSubject.next({
         items: [],
